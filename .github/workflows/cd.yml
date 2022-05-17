@@ -1,0 +1,44 @@
+name: CD
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: environment
+        description: Select the environment
+        required: false
+      choice:
+        type: choice
+        description: Release/Deploy (Make sure the last version exists in the test workspace otherwise the workflow will fail)
+        options:
+        - Test Workspace
+        - Prod Workspace
+        required: true
+      datasource:
+        description: 'Update your datasource, fill in your string connection'     
+        required: false
+      notify:
+        description: 'Fill in an email to notify someone of your great work!'     
+        required: false
+jobs:
+  build:
+    runs-on: windows-latest
+    environment: MyEnvironment
+    name: PowerBI CD
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: poocuser/MainDeserialization@main
+        with:
+          environment: MyEnvironment
+          ENVIRONMENT_EVENT: ${{ github.event.inputs.environment }}
+          CHOICE: ${{ github.event.inputs.choice }}
+          NOTIFY: ${{ github.event.inputs.notify }}
+          PBI_PREMIUM_WORKSPACE_ID: ${{ secrets.PBI_PREMIUM_WORKSPACE_ID }}
+          PBI_TENANT_ID: ${{ secrets.PBI_TENANT_ID }}
+          PBI_CLIENT_ID: ${{ secrets.PBI_CLIENT_ID }}
+          PBI_CLIENT_SECRET: ${{ secrets.PBI_CLIENT_SECRET }}
+          DEV_WORKSPACE: "FromTemplate"
+          PROJECT_NAME: "MyContotoProject9"
+          PREMIUM: "false"
+          USER_EMAIL: "poocuser@6ysf6f.onmicrosoft.com"

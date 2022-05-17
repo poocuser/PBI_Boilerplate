@@ -1,0 +1,58 @@
+name: CI
+on: [push]
+jobs:
+  Job1:
+    runs-on: windows-latest
+    environment: MyEnvironment
+    name: PowerBI CI
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      #- name: Get changed files
+      #  id: changed-files
+      #  uses: tj-actions/changed-files@v12
+      #  with:
+      #    separator: ","
+      - name: GET DIFF FILES
+        id: GET_DIFF_FILES
+        env:
+          GIT_EVENT_BEFORE: ${{ github.event.before }}
+          GIT_EVENT_AFTER: ${{ github.event.after }}
+          GIT_TRIGGER_NAME: ${{ github.event_name }}
+        run: |
+          $pbix_files = @(($(git diff --name-only ${{ github.event.before }} ${{ github.event.after }}))-join "," )
+          Write-Output "ME"  $pbix_files
+          Write-Output "TYPEE" $pbix_files.GetType()
+          Write-Output "::set-output name=CHANGED_FILES::$pbix_files"
+          Write-Output "THEM ${{ steps.changed-files.outputs.all_modified_files }}"
+      - id: foo
+        uses: poocuser/MainDeserialization@main
+        with:
+         who-to-greet: 'Amine Bounizel6'
+         #files: ${{ steps.changed-files.outputs.all_modified_files }} #${{steps.GET_DIFF_FILES.outputs.filesList}}
+         files: ${{ steps.GET_DIFF_FILES.outputs.CHANGED_FILES }}
+         separator: ","
+         composite-path: $GITHUB_WORKSPACE #${{ github.workspace }}
+         PBI_PREMIUM_WORKSPACE_ID: ${{ secrets.PBI_PREMIUM_WORKSPACE_ID }}
+         PBI_TENANT_ID: ${{ secrets.PBI_TENANT_ID }}
+         PBI_CLIENT_ID: ${{ secrets.PBI_CLIENT_ID }}
+         PBI_CLIENT_SECRET: ${{ secrets.PBI_CLIENT_SECRET }}
+         DEV_FOLDER: "./Reports"
+         DEV_WORKSPACE: "FromTemplate"
+         PROJECT_NAME: "MyContotoProject9"
+         PREMIUM: "false"
+         USER_EMAIL: "poocuser@6ysf6f.onmicrosoft.com"
+      - run: echo random-number ${{ steps.foo.outputs.random-number }}
+        shell: bash
+      - run: echo "${{ github.action_path }}" >> $GITHUB_PATH
+        shell: bash  
+      #- uses: stefanzweifel/git-auto-commit-action@v4
+        #with:
+          #commit_message: Reformatted JSON Outputs
+    # - uses: actions/checkout@v2
+    # - name: Call the PS script and publish PBI contents
+    #   shell: powershell
+    #   run: |
+    #     . GitHub/run-task.ps1 -ClientId "a6b79634-8f18-471e-81e8-cb9b60f87942" -Secret "pO_7Q~KwPTSYnwzKj_YKdlcFfrZEhvGshbA-J" -TenantId "1234b804-8fd3-488c-868a-6a81443bd23d" -FilePattern "./Reports" -WorkspaceName "deuxworspace" -Action 'Publish' -Create $true -Overwrite $true
+    #     . GitHub/run-task.ps1 -ClientId "a6b79634-8f18-471e-81e8-cb9b60f87942" -Secret "pO_7Q~KwPTSYnwzKj_YKdlcFfrZEhvGshbA-J" -TenantId "1234b804-8fd3-488c-868a-6a81443bd23d" -FilePattern "./Reports" -WorkspaceName "deuxworspace" -UserString "poocuser@6ysf6f.onmicrosoft.com" -Action 'AddUsers' -AccessRight "Admin" -Create $true
